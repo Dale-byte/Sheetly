@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sheetly</title>
+  <link rel="stylesheet" href="styles.css?v=mob-7">
+</head>
+<body>
+  <div class="app-container">
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h1 class="app-title">Sheetly</h1>
+      </div>
+      <ul class="nav-menu">
+        <li><a href="#dashboard" class="nav-link active" data-view="dashboard">Dashboard</a></li>
+        <li><a href="#budget-sheet" class="nav-link" data-view="budget-sheet">Budget Sheet</a></li>
+        <li><a href="#debts" class="nav-link" data-view="debts">Debts</a></li>
+        <li><a href="#payslip" class="nav-link" data-view="payslip">Payslip</a></li>
+        <li><a href="#categories" class="nav-link" data-view="categories">Notes</a></li>
+        <li><a href="#help" class="nav-link" data-view="help">Help</a></li>
+        <li><a href="#settings" class="nav-link" data-view="settings">Settings</a></li>
+      </ul>
+    </nav>
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+    <main class="main-content">
+      <header class="top-bar">
+        <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="breadcrumb" id="breadcrumb"></div>
+        <div class="top-actions" id="top-actions"></div>
+      </header>
+      <div class="view-container" id="view-container"></div>
+    </main>
+  </div>
+
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal" id="modal" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-title"></h2>
+        <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
+    </div>
+  </div>
+
+    <div class="toast hidden" id="toast"></div>
+
+  <script src="sync.js"></script>
+  <script src="calculator.js?v=2" defer></script>
+  <script src="app.js?v=mob-7"></script>
+  <script>
+    (function() {
+      const sb = document.getElementById('sidebar');
+      const bd = document.getElementById('sidebar-backdrop');
+      const tg = document.getElementById('sidebar-toggle');
+      function open() { sb.classList.add('open'); bd.classList.add('show'); }
+      function close() { sb.classList.remove('open'); bd.classList.remove('show'); }
+      tg && tg.addEventListener('click', () => sb.classList.contains('open') ? close() : open());
+      bd && bd.addEventListener('click', close);
+      document.querySelectorAll('.nav-link').forEach(l => l.addEventListener('click', close));
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+{
+  "name": "Sheetly",
+  "short_name": "Sheetly",
+  "description": "Sheetly budget app - plan and track your monthly budget, debts, and payslips.",
+  "lang": "en",
+  "id": "/sheetly/",
+  "start_url": "/sheetly/",
+  "scope": "/sheetly/",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "/sheetly/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/sheetly/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/sheetly/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/sheetly/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
