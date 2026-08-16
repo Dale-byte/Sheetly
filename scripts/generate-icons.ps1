@@ -1,8 +1,15 @@
 # Generates the Sheetly PWA icons from a square source image into public/icons.
 # Windows-only (uses System.Drawing). Re-run to regenerate at other sizes.
 #
+# The source is a white square with the logo in the middle. This script crops
+# the white margins, then places the logo on a fresh white square per target
+# size with controlled insets:
+#   - app icons ("any"):       logo spans ~74% of the tile
+#   - maskable icon:           logo spans ~58% of the tile (safe zone)
+#   - favicons (16/32):        logo spans ~82% of the tile (stays legible)
+#
 # Usage:
-#   powershell -File scripts/generate-icons.ps1                          # uses the default source below
+#   powershell -File scripts/generate-icons.ps1                          # default source below
 #   powershell -File scripts/generate-icons.ps1 -Source "path\to\icon.png"
 param(
   [string]$Source = "C:\Users\daelf\Documents\vibecode_projects\Sheetly\Sheetly icon.png"
@@ -16,28 +23,53 @@ New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 if (-not (Test-Path -LiteralPath $Source)) {
   throw "Source image not found: $Source"
 }
-$src = [System.Drawing.Image]::FromFile($Source)
+$img = [System.Drawing.Image]::FromFile($Source)
+$bmp = New-Object System.Drawing.Bitmap $img
 
-function Resize-Icon {
-  param([System.Drawing.Image]$Image, [int]$Size, [string]$Path)
-  $bmp = New-Object System.Drawing.Bitmap($Size, $Size)
-  $g = [System.Drawing.Graphics]::FromImage($bmp)
+# 1) find the content bounding box (background is near-white)
+$minX = $bmp.Width; $minY = $bmp.Height; $maxX = -1; $maxY = -1
+for ($x = 0; $x -lt $bmp.Width; $x += 2) {
+  for ($y = 0; $y -lt $bmp.Height; $y += 2) {
+    $c = $bmp.GetPixel($x, $y)
+    if ($c.R -lt 238 -or $c.G -lt 238 -or $c.B -lt 238) {
+      if ($x -lt $minX) { $minX = $x }; if ($x -gt $maxX) { $maxX = $x }
+      if ($y -lt $minY) { $minY = $y }; if ($y -gt $maxY) { $maxY = $y }
+    }
+  }
+}
+$cw = $maxX - $minX + 2
+$ch = $maxY - $minY + 2
+$content = New-Object System.Drawing.Bitmap($cw, $ch)
+$g0 = [System.Drawing.Graphics]::FromImage($content)
+$g0.DrawImage($bmp, -$minX, -$minY)
+$g0.Dispose()
+$bmp.Dispose(); $img.Dispose()
+
+function New-Icon {
+  param([int]$Size, [string]$Path, [double]$LogoWidthFraction)
+  $canvas = New-Object System.Drawing.Bitmap($Size, $Size)
+  $g = [System.Drawing.Graphics]::FromImage($canvas)
   $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
   $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
   $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
-  $g.DrawImage($Image, 0, 0, $Size, $Size)
+  $g.Clear([System.Drawing.Color]::White)
+  $lw = [int][math]::Round($Size * $LogoWidthFraction)
+  $lh = [int][math]::Round($lw * $ch / $cw)
+  $x = [int](($Size - $lw) / 2.0)
+  $y = [int](($Size - $lh) / 2.0)
+  $g.DrawImage($content, $x, $y, $lw, $lh)
   $g.Dispose()
-  $bmp.Save($Path, [System.Drawing.Imaging.ImageFormat]::Png)
-  $bmp.Dispose()
+  $canvas.Save($Path, [System.Drawing.Imaging.ImageFormat]::Png)
+  $canvas.Dispose()
 }
 
-Resize-Icon -Image $src -Size 512 -Path (Join-Path $outDir "icon-512.png")
-Resize-Icon -Image $src -Size 512 -Path (Join-Path $outDir "icon-maskable-512.png")
-Resize-Icon -Image $src -Size 192 -Path (Join-Path $outDir "icon-192.png")
-Resize-Icon -Image $src -Size 180 -Path (Join-Path $outDir "apple-touch-icon.png")
-Resize-Icon -Image $src -Size 32 -Path (Join-Path $outDir "favicon-32x32.png")
-Resize-Icon -Image $src -Size 16 -Path (Join-Path $outDir "favicon-16x16.png")
-$src.Dispose()
+New-Icon -Size 512 -Path (Join-Path $outDir "icon-512.png")          -LogoWidthFraction 0.74
+New-Icon -Size 512 -Path (Join-Path $outDir "icon-maskable-512.png") -LogoWidthFraction 0.58
+New-Icon -Size 192 -Path (Join-Path $outDir "icon-192.png")          -LogoWidthFraction 0.74
+New-Icon -Size 180 -Path (Join-Path $outDir "apple-touch-icon.png")  -LogoWidthFraction 0.74
+New-Icon -Size 32  -Path (Join-Path $outDir "favicon-32x32.png")     -LogoWidthFraction 0.82
+New-Icon -Size 16  -Path (Join-Path $outDir "favicon-16x16.png")     -LogoWidthFraction 0.82
+$content.Dispose()
 
 # SVG wrapper that embeds the 512 raster (browser-tab favicon + manifest "any" icon).
 $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><image width="512" height="512" href="icon-512.png"/></svg>'
