@@ -4,9 +4,10 @@
 # The source is a white square with the logo in the middle. This script crops
 # the white margins, then places the logo on a fresh white square per target
 # size with controlled insets:
-#   - app icons ("any"):       logo spans ~62% of the tile (generous padding so
-#                               home-screen launchers that zoom don't clip it)
-#   - maskable icon:           logo spans ~55% of the tile (safe zone)
+#   - app icons ("any"):       logo spans ~55% of the tile
+#   - maskable icon:           logo spans ~42% of the tile. Chromium (Chrome/Brave)
+#                              crops maskable icons ~1.5x, breaching the safe zone,
+#                              so the logo needs extra padding to look normal there.
 #   - favicons (16/32):        logo spans ~82% of the tile (stays legible)
 #
 # Usage:
@@ -64,10 +65,10 @@ function New-Icon {
   $canvas.Dispose()
 }
 
-New-Icon -Size 512 -Path (Join-Path $outDir "icon-512.png")          -LogoWidthFraction 0.62
-New-Icon -Size 512 -Path (Join-Path $outDir "icon-maskable-512.png") -LogoWidthFraction 0.55
-New-Icon -Size 192 -Path (Join-Path $outDir "icon-192.png")          -LogoWidthFraction 0.62
-New-Icon -Size 180 -Path (Join-Path $outDir "apple-touch-icon.png")  -LogoWidthFraction 0.62
+New-Icon -Size 512 -Path (Join-Path $outDir "icon-512.png")          -LogoWidthFraction 0.55
+New-Icon -Size 512 -Path (Join-Path $outDir "icon-maskable-512.png") -LogoWidthFraction 0.42
+New-Icon -Size 192 -Path (Join-Path $outDir "icon-192.png")          -LogoWidthFraction 0.55
+New-Icon -Size 180 -Path (Join-Path $outDir "apple-touch-icon.png")  -LogoWidthFraction 0.55
 New-Icon -Size 32  -Path (Join-Path $outDir "favicon-32x32.png")     -LogoWidthFraction 0.82
 New-Icon -Size 16  -Path (Join-Path $outDir "favicon-16x16.png")     -LogoWidthFraction 0.82
 $content.Dispose()
